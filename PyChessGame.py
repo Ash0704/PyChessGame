@@ -1,6 +1,9 @@
 import pygame
+from pygame.locals import QUIT, MOUSEBUTTONDOWN
 import sys
 import os
+
+# pygame 초기화
 pygame.init()
 
 width, height = 400, 360  # 한 칸 넓이 50, 45
@@ -10,9 +13,12 @@ pygame.display.set_caption("PyChessGame")
 white = (255, 255, 255)
 black = (100, 100, 100)
 
+# 초기 화면 설정
+initial_screen = True
+play_button_rect = pygame.Rect(150, 150, 100, 50)  # Play 버튼 위치 및 크기 설정
+
+
 # 체스 보드 그리기
-
-
 def draw_chess_board():
     for row in range(8):
         for col in range(8):
@@ -37,9 +43,8 @@ for color in ["white", "black"]:
 piece_position = (width // 2 - piece_images["white_pawn"].get_width(
 ) // 2, height // 2 - piece_images["white_pawn"].get_height() // 2)
 
+
 # 체스 보드 초기화
-
-
 def initialize_board():
     board = [[0] * 8 for _ in range(8)]
 
@@ -81,13 +86,298 @@ for row in range(8):
 # 업데이트된 화면을 표시
 pygame.display.flip()
 
+# 폰 이동 방식
+
+
+def valid_moves_pawn(row, col, is_white):
+    moves = []
+    direction = 1 if is_white else -1
+
+    if 0 <= row + direction < 8 and chess_board[row + direction][col] == 0:
+        moves.append((row + direction, col))
+        if (row == 1 and is_white) or (row == 6 and not is_white):
+            if chess_board[row + 2 * direction][col] == 0:
+                moves.append((row + 2 * direction, col))
+
+    for col_offset in [-1, 1]:
+        new_col = col + col_offset
+        if 0 <= row + direction < 8 and 0 <= new_col < 8:
+            target_piece = chess_board[row + direction][new_col]
+            if target_piece != 0 and (is_white != target_piece.startswith("white")):
+                moves.append((row + direction, new_col))
+
+    return moves
+
+# 룩 이동 방식
+
+
+def valid_moves_rook(row, col):
+    moves = []
+
+    for row_offset, col_offset in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        new_row, new_col = row + row_offset, col + col_offset
+        while 0 <= new_row < 8 and 0 <= new_col < 8:
+            target_piece = chess_board[new_row][new_col]
+            if target_piece == 0:
+                moves.append((new_row, new_col))
+            else:
+                if target_piece.startswith("black") != chess_board[row][col].startswith("black"):
+                    moves.append((new_row, new_col))
+                break
+            new_row, new_col = new_row + row_offset, new_col + col_offset
+
+    return moves
+
+# 비숍 이동 방식
+
+
+def valid_moves_bishop(row, col):
+    moves = []
+
+    for row_offset, col_offset in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+        new_row, new_col = row + row_offset, col + col_offset
+        while 0 <= new_row < 8 and 0 <= new_col < 8:
+            target_piece = chess_board[new_row][new_col]
+            if target_piece == 0:
+                moves.append((new_row, new_col))
+            else:
+                if target_piece.startswith("black") != chess_board[row][col].startswith("black"):
+                    moves.append((new_row, new_col))
+                break
+            new_row, new_col = new_row + row_offset, new_col + col_offset
+
+    return moves
+
+
+# 나이트 이동 방식
+def valid_moves_knight(row, col):
+    moves = []
+
+    for row_offset in [-2, -1, 1, 2]:
+        for col_offset in [-2, -1, 1, 2]:
+            if abs(row_offset) + abs(col_offset) == 3:
+                new_row, new_col = row + row_offset, col + col_offset
+                if 0 <= new_row < 8 and 0 <= new_col < 8:
+                    target_piece = chess_board[new_row][new_col]
+                    if target_piece == 0 or (target_piece.startswith("black") != chess_board[row][col].startswith("black")):
+                        moves.append((new_row, new_col))
+
+    return moves
+
+
+# 퀸 이동 방식
+def valid_moves_queen(row, col):
+    moves = valid_moves_bishop(row, col) + valid_moves_rook(row, col)
+    return moves
+
+# 킹 이동 방식
+
+
+def valid_moves_king(row, col):
+    moves = []
+
+    for row_offset in [-1, 0, 1]:
+        for col_offset in [-1, 0, 1]:
+            new_row, new_col = row + row_offset, col + col_offset
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                target_piece = chess_board[new_row][new_col]
+                if target_piece == 0 or (target_piece.startswith("black") != chess_board[row][col].startswith("black")):
+                    moves.append((new_row, new_col))
+
+    return moves
+
+
+def get_valid_moves(row, col):
+    piece_key = chess_board[row][col]
+
+    if piece_key.startswith("white"):
+        is_white = True
+    else:
+        is_white = False
+
+    if piece_key.endswith("pawn"):
+        return valid_moves_pawn(row, col, is_white)
+    elif piece_key.endswith("rook"):
+        return valid_moves_rook(row, col)
+    elif piece_key.endswith("knight"):
+        return valid_moves_knight(row, col)
+    elif piece_key.endswith("bishop"):
+        return valid_moves_bishop(row, col)
+    elif piece_key.endswith("queen"):
+        return valid_moves_queen(row, col)
+    elif piece_key.endswith("king"):
+        return valid_moves_king(row, col)
+    else:
+        return []
+
+# 킹이 죽었을 때 게임 종료 여부 확인
+
+
+def check_game_over():
+    white_king_alive = False
+    black_king_alive = False
+
+    for row in range(8):
+        for col in range(8):
+            piece_key = chess_board[row][col]
+            if piece_key == "white_king":
+                white_king_alive = True
+            elif piece_key == "black_king":
+                black_king_alive = True
+
+    return not (white_king_alive and black_king_alive)
+
+# 이긴 팀을 화면에 표시
+
+
+def show_winner(winner_color):
+    font = pygame.font.Font(None, 36)
+    text_color = (0, 0, 0)  # 텍스트 색을 검은색으로 지정
+    if winner_color == "black":
+        text = font.render("White Team Wins!", True, text_color)
+    else:
+        text = font.render("Black Team Wins!", True, text_color)
+    text_rect = text.get_rect(center=(width // 2, height // 2))
+    chessBoard.blit(text, text_rect)
+    pygame.display.flip()
+    pygame.time.wait(3000)  # 3초 동안 결과를 보여준 후 게임 종료
+
 
 # 게임 루프
 running = True
+selected_piece = None
+is_piece_selected = False
+current_turn = "black"  # 초기에는 검은색 말의 차례
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # 마우스 클릭 위치 확인
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            clicked_row = mouse_y // (height // 8)
+            clicked_col = mouse_x // (width // 8)
+
+            if initial_screen:
+                if play_button_rect.collidepoint(mouse_x, mouse_y):
+                    initial_screen = False
+                    break
+
+            else:
+                if selected_piece is None:
+                    # 선택된 말이 없을 때, 현재 턴의 말을 선택
+                    if (
+                        current_turn == "black"
+                        and chess_board[clicked_row][clicked_col] != 0
+                        and chess_board[clicked_row][clicked_col].startswith("black")
+                    ):
+                        selected_piece = (clicked_row, clicked_col)
+                        is_piece_selected = True
+                    elif (
+                        current_turn == "white"
+                        and chess_board[clicked_row][clicked_col] != 0
+                        and chess_board[clicked_row][clicked_col].startswith("white")
+                    ):
+                        selected_piece = (clicked_row, clicked_col)
+                        is_piece_selected = True
+                else:
+                    # 선택된 말이 있을 때, 다른 말을 선택하면 해당 말로 변경
+                    if (
+                        chess_board[clicked_row][clicked_col] != 0
+                        and (
+                            (current_turn == "black" and chess_board[clicked_row][clicked_col].startswith(
+                                "black"))
+                            or (current_turn == "white" and chess_board[clicked_row][clicked_col].startswith("white"))
+                        )
+                    ):
+                        selected_piece = (clicked_row, clicked_col)
+                    else:
+                        # 선택된 말의 이동 가능한 위치인지 확인하고 이동
+                        valid_moves = get_valid_moves(
+                            selected_piece[0], selected_piece[1]
+                        )
+                        if (clicked_row, clicked_col) in valid_moves:
+                            # 공격한 말의 이미지로 바꾸기
+                            attacking_piece = chess_board[selected_piece[0]][
+                                selected_piece[1]
+                            ]
+                            chess_board[clicked_row][clicked_col] = attacking_piece
+                            chess_board[selected_piece[0]
+                                        ][selected_piece[1]] = 0
+                            selected_piece = None
+                            is_piece_selected = False
+
+                            # 턴 전환
+                            current_turn = "white" if current_turn == "black" else "black"
+
+                            # 게임 종료 여부 확인
+                            if check_game_over():
+                                # 이긴 팀 표시
+                                show_winner(current_turn)
+                                running = False  # 게임 종료
+
+    if initial_screen:
+        # 초기 화면 그리기
+        chessBoard.fill((255, 255, 255))  # 흰색 바탕
+        font = pygame.font.Font(None, 36)
+
+        # PyChessGame 제목 표시
+        title_text = font.render("PyChessGame", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(width // 2, height // 3))
+        chessBoard.blit(title_text, title_rect)
+
+        # Play 버튼 그리기
+        pygame.draw.rect(chessBoard, (200, 200, 200),
+                         play_button_rect)  # 회색 Play 버튼
+        play_text = font.render("Play", True, (0, 0, 0))
+        play_rect = play_text.get_rect(center=play_button_rect.center)
+        chessBoard.blit(play_text, play_rect)
+
+        # 업데이트된 초기 화면 표시
+        pygame.display.flip()
+
+    else:
+        # 체스 보드 그리기
+        draw_chess_board()
+    # 말 이미지 표시
+
+        for row in range(8):
+            for col in range(8):
+                if chess_board[row][col] != 0:
+                    piece_key = chess_board[row][col]
+                    piece_position = (col * (width // 8), row * (height // 8))
+
+                    # 선택된 말 강조
+                    if is_piece_selected and (row, col) == selected_piece:
+                        pygame.draw.rect(
+                            chessBoard, (255, 0, 0), (*piece_position, width // 8, height // 8), 5)
+
+                    chessBoard.blit(piece_images[piece_key], piece_position)
+
+        # 선택한 말의 이동 가능한 위치 표시
+        if selected_piece is not None:
+            selected_row, selected_col = selected_piece
+            valid_moves = get_valid_moves(selected_row, selected_col)
+            for move_row, move_col in valid_moves:
+                # 이동 가능한 곳에 녹색 원 표시
+                pygame.draw.circle(chessBoard, (0, 255, 0, 100), ((
+                    move_col * (width // 8)) + width // 16, (move_row * (height // 8)) + height // 16), 12)
+
+                # 상대 말이 있는 경우 해당 위치에 붉은 원 표시
+                target_piece = chess_board[move_row][move_col]
+                if (
+                    target_piece != 0
+                    and (
+                        (current_turn == "black" and target_piece.startswith("white"))
+                        or (current_turn == "white" and target_piece.startswith("black"))
+                    )
+                ):
+                    pygame.draw.circle(chessBoard, (255, 0, 0, 100), ((
+                        move_col * (width // 8)) + width // 16, (move_row * (height // 8)) + height // 16), 12)
+
+        # 업데이트된 화면을 표시
+        pygame.display.flip()
 
 # Pygame 종료
 pygame.quit()
