@@ -23,7 +23,7 @@ play_button_rect = pygame.Rect(
 
 # 초기 화면 함수
 def draw_initial_screen():
-    background = pygame.image.load("background.png")  # 파일 경로를 적절하게 수정
+    background = pygame.image.load("images/background.png")  # 파일 경로를 적절하게 수정
     background = pygame.transform.scale(background, (480, 440))
     chessBoard.blit(background, (0, 0))
     font = pygame.font.Font(None, 45)
@@ -93,12 +93,12 @@ def draw_chess_board():
     for i, label in enumerate("12345678"):  # 오른쪽
         text = pygame.transform.rotate(
             font.render(label, True, (0, 0, 0)), 180)
-        chessBoard.blit(text, (width + border_size + 10, i *
+        chessBoard.blit(text, (width + border_size + 15, i *
                         (height // 8) + border_size + 25))
 
     for i, label in enumerate("12345678"):  # 왼쪽
         text = font.render(label, True, (0, 0, 0))
-        chessBoard.blit(text, (border_size - 30, i *
+        chessBoard.blit(text, (border_size - 25, i *
                         (height // 8) + border_size + 25))
 
 
@@ -107,7 +107,7 @@ piece_images = {}
 for color in ["white", "black"]:
     for piece in ["pawn", "rook", "knight", "bishop", "queen", "king"]:
         piece_key = f"{color}_{piece}"
-        piece_filename = f"{piece_key}.png"  # 파일 경로를 적절하게 수정
+        piece_filename = f"images/{piece_key}.png"  # 파일 경로를 적절하게 수정
         piece_images[piece_key] = pygame.image.load(
             piece_filename).convert_alpha()
         piece_images[piece_key] = pygame.transform.scale(
