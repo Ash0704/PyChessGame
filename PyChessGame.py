@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import QUIT, MOUSEBUTTONDOWN
 import sys
+import random
 
 # pygame 초기화
 pygame.init()
@@ -20,6 +21,9 @@ initial_screen = True
 play_button_rect = pygame.Rect(
     150+border_size, 200+border_size, 100, 50)  # Play 버튼 위치 및 크기 설정
 
+# 사운드 추가
+winSound = "sounds/win_sound.wav"
+
 
 # 초기 화면 함수
 def draw_initial_screen():
@@ -28,7 +32,7 @@ def draw_initial_screen():
     chessBoard.blit(background, (0, 0))
     font = pygame.font.Font(None, 45)
 
-    font_title = pygame.font.Font(None, 60)  # PyChessGame 제목 폰트 크기 키우기
+    font_title = pygame.font.Font(None, 70)  # PyChessGame 제목 폰트 크기 키우기
     font_button = pygame.font.Font(None, 36)  # 버튼 폰트 크기 설정
 
     # PyChessGame 제목 표시
@@ -53,21 +57,21 @@ def draw_initial_screen():
 
 # 체스 보드 그리기
 def draw_chess_board():
-    pygame.draw.rect(chessBoard, (180, 180, 180), (0, 0, width +
-                     2 * border_size, border_size))
+    pygame.draw.rect(chessBoard, (180, 180, 180),
+                     (0, 0, width + 2 * border_size, border_size))
     pygame.draw.rect(chessBoard, (180, 180, 180),
                      (0, 0, border_size, height + 2 * border_size))
-    pygame.draw.rect(chessBoard, (180, 180, 180), (0, height + border_size,
-                     width + 2 * border_size, border_size))
-    pygame.draw.rect(chessBoard, (180, 180, 180), (width + border_size,
-                     0, border_size, height + 2 * border_size))
+    pygame.draw.rect(chessBoard, (180, 180, 180), (0, height +
+                     border_size, width + 2 * border_size, border_size))
+    pygame.draw.rect(chessBoard, (180, 180, 180), (width +
+                     border_size, 0, border_size, height + 2 * border_size))
 
     for row in range(8):
         for col in range(8):
             # 번갈아가며 사각형 그리기
             color = white if (row + col) % 2 == 0 else black
-            pygame.draw.rect(chessBoard, color,
-                             (col * (width//8)+border_size, row * (height//8)+border_size, 50, 45))
+            pygame.draw.rect(chessBoard, color, (col * (width//8) +
+                             border_size, row * (height//8)+border_size, 50, 45))
 
     pygame.draw.lines(chessBoard, (0, 0, 0), True, [
         (border_size, border_size),
@@ -79,27 +83,27 @@ def draw_chess_board():
     # 좌표 추가
     font = pygame.font.Font(None, 28)
 
-    for i, label in enumerate("hgfedcba"):  # 위쪽
+    for i, label in enumerate("abcdefgh"):  # 위쪽
         text = pygame.transform.rotate(
             font.render(label, True, (0, 0, 0)), 180)
         chessBoard.blit(
             text, (i * (width // 8) + border_size + 25, border_size - 30))
 
-    for i, label in enumerate("hgfedcba"):  # 아래쪽
+    for i, label in enumerate("abcdefgh"):  # 아래쪽
         text = font.render(label, True, (0, 0, 0))
         chessBoard.blit(
             text, (i * (width // 8) + border_size + 25, height + border_size + 10))
 
-    for i, label in enumerate("12345678"):  # 오른쪽
+    for i, label in enumerate("87654321"):  # 오른쪽
         text = pygame.transform.rotate(
             font.render(label, True, (0, 0, 0)), 180)
         chessBoard.blit(text, (width + border_size + 15, i *
-                        (height // 8) + border_size + 25))
+                        (height // 8) + border_size + 20))
 
-    for i, label in enumerate("12345678"):  # 왼쪽
+    for i, label in enumerate("87654321"):  # 왼쪽
         text = font.render(label, True, (0, 0, 0))
         chessBoard.blit(text, (border_size - 25, i *
-                        (height // 8) + border_size + 25))
+                        (height // 8) + border_size + 20))
 
 
 # 말 이미지 로드
@@ -107,7 +111,7 @@ piece_images = {}
 for color in ["white", "black"]:
     for piece in ["pawn", "rook", "knight", "bishop", "queen", "king"]:
         piece_key = f"{color}_{piece}"
-        piece_filename = f"images/{piece_key}.png"  # 파일 경로를 적절하게 수정
+        piece_filename = f"images/{piece_key}.png"
         piece_images[piece_key] = pygame.image.load(
             piece_filename).convert_alpha()
         piece_images[piece_key] = pygame.transform.scale(
@@ -240,6 +244,7 @@ def valid_moves_knight(row, col):
 # 퀸 이동 방식
 def valid_moves_queen(row, col):
     moves = valid_moves_bishop(row, col) + valid_moves_rook(row, col)
+
     return moves
 
 
@@ -298,6 +303,13 @@ def check_game_over():
 
     return not (white_king_alive and black_king_alive)
 
+# 턴을 전환하는 함수
+
+
+def change_turn():
+    global current_turn
+    current_turn = "white" if current_turn == "black" else "black"
+
 
 # 이긴 팀을 화면에 표시
 def show_winner(winner_color):
@@ -310,8 +322,43 @@ def show_winner(winner_color):
     text_rect = text.get_rect(
         center=(width // 2+border_size, height // 2+border_size))
     chessBoard.blit(text, text_rect)
+
+    # 게임 승리 사운드
+    win_sound = pygame.mixer.Sound(winSound)
+    win_sound.play()
+
     pygame.display.flip()
     pygame.time.wait(3000)  # 3초 동안 결과를 보여준 후 게임 종료
+
+
+# 폰 승급 여부를 기록하는 딕셔너리
+promoted_pawns = {"white": set(), "black": set()}
+
+
+# 폰 승급 프로모션 기능 추가
+def promote_pawn(row, col):
+    global current_turn
+    piece_key = chess_board[row][col]
+    is_white = chess_board[row][col].startswith("white")
+
+    # 폰에 대해서만 승급 여부 확인
+    if piece_key.endswith("pawn") and is_promotion_row(row, is_white) and row not in promoted_pawns["white" if is_white else "black"]:
+        promotion_options = ["rook", "bishop", "knight", "queen"]
+        selected_piece = random.choice(promotion_options)  # 랜덤으로 선택
+
+        # 선택된 말로 폰을 대체합니다.
+        chess_board[row][col] = f"{current_turn}_{selected_piece}"
+
+        # 승급 여부 기록
+        promoted_pawns["white" if is_white else "black"].add(row)
+
+
+# 승급 가능한 행 확인
+def is_promotion_row(row, is_white):
+    if is_white:
+        return row == 7
+    else:
+        return row == 0
 
 
 # 게임 루프
@@ -321,6 +368,12 @@ is_piece_selected = False
 current_turn = "black"  # 초기에는 검은색 말의 차례
 
 while running:
+    if check_game_over():
+
+        # 이긴 팀 표시
+        show_winner(current_turn)
+        running = False  # 게임 종료
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -366,8 +419,8 @@ while running:
                     else:
                         # 선택된 말의 이동 가능한 위치인지 확인하고 이동
                         valid_moves = get_valid_moves(
-                            selected_piece[0], selected_piece[1]
-                        )
+                            selected_piece[0], selected_piece[1])
+
                         if (clicked_row, clicked_col) in valid_moves:
                             # 공격한 말의 이미지로 바꾸기
                             attacking_piece = chess_board[selected_piece[0]
@@ -378,14 +431,12 @@ while running:
                             selected_piece = None
                             is_piece_selected = False
 
-                            # 턴 전환
-                            current_turn = "white" if current_turn == "black" else "black"
+                           # 폰 승급 체크 및 처리
+                            if is_promotion_row(clicked_row, current_turn == "white"):
+                                promote_pawn(clicked_row, clicked_col)
 
-                            # 게임 종료 여부 확인
-                            if check_game_over():
-                                # 이긴 팀 표시
-                                show_winner(current_turn)
-                                running = False  # 게임 종료
+                            # 턴 전환
+                            change_turn()
 
     if initial_screen:
         # 초기 화면 그리기
