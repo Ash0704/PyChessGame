@@ -3,8 +3,8 @@
 
 >## 설명
 
-PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Player 체스 게임입니다.<br> 
-기존의 체스 룰에 몇 가지 차별적인 변화가 있어 전략적인 플레이를 즐길 수 있습니다.<br>
+- PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Player 체스 게임입니다.<br> 
+- 기존의 체스 룰에 몇 가지 차별적인 변화가 있어 전략적인 플레이를 즐길 수 있습니다.<br>
 
 
 <br> 
