@@ -34,27 +34,36 @@ PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Play
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/5f512851-1a56-4f4f-b0ee-ada9bcbea5c5)
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/21f54279-ac49-42fc-b94c-441d9882adee)
-
+  
+<br>
 
   # 나이트(Knight)
   > 한칸 후 대각선 이동 가능, 말을 뛰어넘을 수 있음
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/d92f23c4-a771-482a-b976-6bfce03d532b)
+  
+<br>
 
   # 룩(Rook)
   > 상하좌우 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/44fd61a8-ac39-4998-af9e-6ac742f8a288)
+  
+<br>
 
   # 비숍(Bishop)
   > 대각선 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/db72a516-99f6-4561-84f4-9279af8f5f41)
+  
+<br>
 
   # 퀸(Queen)
   > 8방향 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/bc2aaaf4-64b8-4a0c-b127-4f92ea8640f6)
+  
+<br>
 
   # 킹(King)
   > 8방향 이동 가능하며 한칸 씩 이동 가능
