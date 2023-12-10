@@ -22,7 +22,11 @@ play_button_rect = pygame.Rect(
     150+border_size, 200+border_size, 100, 50)  # Play 버튼 위치 및 크기 설정
 
 # 사운드 추가
+pygame.mixer.init()
 winSound = "sounds/win_sound.wav"
+moveSound = "sounds/move_sound.wav"
+win_sound = pygame.mixer.Sound(winSound)
+move_sound = pygame.mixer.Sound(moveSound)
 
 
 # 초기 화면 함수
@@ -303,9 +307,8 @@ def check_game_over():
 
     return not (white_king_alive and black_king_alive)
 
+
 # 턴을 전환하는 함수
-
-
 def change_turn():
     global current_turn
     current_turn = "white" if current_turn == "black" else "black"
@@ -324,7 +327,6 @@ def show_winner(winner_color):
     chessBoard.blit(text, text_rect)
 
     # 게임 승리 사운드
-    win_sound = pygame.mixer.Sound(winSound)
     win_sound.play()
 
     pygame.display.flip()
@@ -365,7 +367,7 @@ def is_promotion_row(row, is_white):
 running = True
 selected_piece = None
 is_piece_selected = False
-current_turn = "black"  # 초기에는 검은색 말의 차례
+current_turn = "black"  # 초기에는 검은색 말의 차례zz
 
 while running:
     if check_game_over():
@@ -420,6 +422,8 @@ while running:
                         # 선택된 말의 이동 가능한 위치인지 확인하고 이동
                         valid_moves = get_valid_moves(
                             selected_piece[0], selected_piece[1])
+                        # 이동 사운드
+                        move_sound.play()
 
                         if (clicked_row, clicked_col) in valid_moves:
                             # 공격한 말의 이미지로 바꾸기
@@ -486,5 +490,6 @@ while running:
     pygame.display.flip()
 
 # Pygame 종료
+pygame.mixer.quit()
 pygame.quit()
 sys.exit()
