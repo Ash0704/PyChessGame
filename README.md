@@ -29,34 +29,34 @@ PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Play
 - 프로모션은 1회에 한해 폰이 체스 보드 끝에 이동했을 때 랜덤으로 이루어집니다.
 - 승리 조건은 상대방 왕을 잡을 경우입니다.
 
-  # 폰
+  # 폰(Pawn)
   > 첫 이동 시 두칸 이동 가능, 그 이외엔 앞으로만 이동 가능. 공격은 대각선으로만 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/5f512851-1a56-4f4f-b0ee-ada9bcbea5c5)
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/21f54279-ac49-42fc-b94c-441d9882adee)
 
 
-  # 나이트
+  # 나이트(Knight)
   > 한칸 후 대각선 이동 가능, 말을 뛰어넘을 수 있음
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/d92f23c4-a771-482a-b976-6bfce03d532b)
 
-  # 룩
+  # 룩(Rook)
   > 상하좌우 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/44fd61a8-ac39-4998-af9e-6ac742f8a288)
 
-  # 비숍
+  # 비숍(Bishop)
   > 대각선 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/db72a516-99f6-4561-84f4-9279af8f5f41)
 
-  # 퀸
+  # 퀸(Queen)
   > 8방향 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/bc2aaaf4-64b8-4a0c-b127-4f92ea8640f6)
 
-  # 킹
+  # 킹(King)
   > 8방향 이동 가능하며 한칸 씩 이동 가능
   
   ![image](https://github.com/Ash0704/PyChessGame/assets/123534011/7d0070c0-fb6b-4d47-8095-948191f11654)
@@ -124,10 +124,12 @@ PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Play
 
 ---
 >## 사용 라이브러리
-
-- pygame
-- random
-
+```
+import pygame
+from pygame.locals import QUIT, MOUSEBUTTONDOWN
+import sys
+import random
+```
 <br> 
 
 ---
@@ -141,12 +143,12 @@ PyChessGame은 Python의 pygame 라이브러리를 사용하여 개발한 2 Play
 ---
 >## 크레딧
 
-✨ 문의 사항이나 궁금한 점이 있으면 아래 메일로 연락주세요! 😄  
-**개발자 이메일:** shyun3076@naver.com
+✨ 오류나 희망 추가 사항이 있다면 연락주세요! 😄  
+✨ **개발자 이메일:** shyun3076@naver.com
 
 <br> 
 
 ---
 >## 라이센스
 
-이 프로젝트는 MIT LICENSE에 따라 라이센스가 부여됩니다. 자세한 내용은 라이센스를 참조해주세요.
+이 프로젝트는 MIT LICENSE에 따라 라이센스가 부여됩니다. 자세한 내용은 [라이센스](https://github.com/Ash0704/PyChessGame/blob/main/LICENSE.md)를 참조해주세요.
